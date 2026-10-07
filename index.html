@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCFHS / Prometric Senior RN Licensure Examination Simulator</title>
+    <style>
+        :root {
+            --primary-color: #0c3b5e;
+            --secondary-color: #145da0;
+            --accent-color: #2e8bc0;
+            --background-color: #f0f4f8;
+            --card-background: #ffffff;
+            --text-color: #1e293b;
+            --correct-color: #15803d;
+            --incorrect-color: #b91c1c;
+            --correct-bg: #dcfce7;
+            --incorrect-bg: #fee2e2;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: var(--card-background);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.35rem;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .user-info-card {
+            background-color: #e0f2fe;
+            border: 1px solid #bae6fd;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .timer-box {
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--incorrect-color);
+            background: #fee2e2;
+            padding: 8px 18px;
+            border-radius: 6px;
+            border: 1px solid #fca5a5;
+        }
+
+        .question-card {
+            margin-bottom: 25px;
+            padding: 22px;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .question-title {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 15px;
+            color: #0f172a;
+        }
+
+        .options-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .option-item {
+            margin-bottom: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: flex-start;
+            padding: 14px 16px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .option-label:hover {
+            background-color: #f0f9ff;
+            border-color: var(--secondary-color);
+        }
+
+        .option-label input {
+            margin-right: 12px;
+            margin-top: 4px;
+        }
+
+        /* Color Feedback Engine */
+        .option-label.selected-correct {
+            background-color: var(--correct-bg) !important;
+            border-color: var(--correct-color) !important;
+            color: var(--correct-color) !important;
+            font-weight: 700;
+        }
+
+        .option-label.selected-incorrect {
+            background-color: var(--incorrect-bg) !important;
+            border-color: var(--incorrect-color) !important;
+            color: var(--incorrect-color) !important;
+            font-weight: 700;
+        }
+
+        .option-label.highlight-correct {
+            border: 2px solid var(--correct-color) !important;
+            background-color: #f0fdf4 !important;
+            color: var(--correct-color) !important;
+        }
+
+        .rationale-box {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            background-color: #f0fdf4;
+            border-left: 5px solid var(--correct-color);
+            font-size: 0.95rem;
+        }
+
+        .rationale-box.incorrect {
+            background-color: #fef2f2;
+            border-left-color: var(--incorrect-color);
+        }
+
+        .distractor-analysis {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #334155;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 8px;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #082a45;
+        }
+
+        .btn-secondary {
+            background-color: var(--accent-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #1e6b96;
+        }
+
+        .navigation-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .nav-left {
+            display: flex;
+            gap: 10px;
+        }
+
+        .results-panel {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            border: 2px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            background-color: #ffffff;
+            margin-bottom: 30px;
+        }
+
+        .assessment-badge {
+            display: inline-block;
+            font-size: 1.8rem;
+            font-weight: 800;
+            padding: 12px 30px;
+            border-radius: 30px;
+            margin: 15px 0;
+            text-transform: uppercase;
+        }
+
+        .status-go {
+            background-color: #dcfce7;
+            color: #15803d;
+            border: 2px solid #15803d;
+        }
+
+        .status-not-go {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border: 2px solid #b91c1c;
+        }
+
+        .score-display {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-color);
+            margin: 10px 0;
+        }
+
+        .candidate-summary {
+            font-size: 1.05rem;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 6px;
+            text-align: left;
+            display: inline-block;
+            width: 85%;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .container { padding: 15px; }
+            header { flex-direction: column; align-items: flex-start; }
+            .candidate-summary { width: 100%; }
+            .navigation-footer { flex-direction: column; gap: 15px; align-items: stretch; }
+            .nav-left { justify-content: center; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>SCFHS Board Licensing Exam Simulator</h1>
+            <span class="badge">Senior RN Specialist Assessment (120 Items)</span>
+        </div>
+        <div class="timer-box" id="timer">Time Remaining: 180:00</div>
+    </header>
+
+    <!-- Form Registrasi -->
+    <div class="user-info-card" id="profile-section">
+        <h3 style="margin-top:0; color: var(--primary-color);">Saudi Commission Candidate Credentials</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+            <div class="form-group">
+                <label for="candidate-name">Candidate Full Name (English):</label>
+                <input type="text" id="candidate-name" value="Senior Nurse Candidate" required>
+            </div>
+            <div class="form-group">
+                <label for="candidate-id">SCFHS Eligibility Reference Number:</label>
+                <input type="text" id="candidate-id" value="SCFHS-2026-994821" required>
+            </div>
+        </div>
+        <button class="btn" style="margin-top: 10px;" onclick="initializeExam()">Start Official Assessment</button>
+    </div>
+
+    <!-- Panel Report / Results -->
+    <div class="results-panel" id="results-panel">
+        <h2>Official SCFHS Competency Evaluation Report</h2>
+        <div class="candidate-summary" id="candidate-summary-output"></div>
+        <div id="assessment-badge-container"></div>
+        <div class="score-display" id="score-text">0%</div>
+        <p id="pass-fail-details" style="font-size: 1.1rem;"></p>
+        <button class="btn" onclick="location.reload()">Retake Assessment</button>
+    </div>
+
+    <!-- Question View Area -->
+    <div id="quiz-container" style="display: none;"></div>
+
+    <!-- Navigation Footer -->
+    <div class="navigation-footer" id="navigation-container" style="display: none;">
+        <div class="nav-left">
+            <button class="btn" id="prev-btn" onclick="prevQuestion()" style="display: none;">Previous</button>
+            <button class="btn" id="next-btn" onclick="nextQuestion()">Next</button>
+        </div>
+        <div>
+            <button class="btn btn-secondary" id="rationale-btn" onclick="toggleRationale()">Show Rationale</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const masterQuestionBank = [
+        {
+            question: "A client post-subtotal thyroidectomy exhibits severe anxiety, cardiac racing, and diaphoresis. Assessment shows HR 142 bpm, BP 168/92 mmHg, and Temperature 39.8°C. Which PRIORITY action should the nurse implement first?",
+            options: [
+                { text: "Apply cooling blankets and ice packs to axillae while preparing IV propylthiouracil.", isCorrect: true },
+                { text: "Administer IV bolus of 0.9% Normal Saline 1,000 mL and recheck temperature in one hour.", isCorrect: false },
+                { text: "Prepare the emergency bedside surgical tracheostomy tray and alert the surgeon on call.", isCorrect: false },
+                { text: "Obtain a 12-lead ECG immediately and request an urgent bedside cardiology consultation.", isCorrect: false }
+            ],
+            rationale: "Thyroid Storm (Thyrotoxic Crisis) is a hypermetabolic emergency. The immediate priority is hyperthermia management and inhibiting thyroid hormone synthesis.",
+            distractorAnalysis: "Saline alone does not stop thyroid hormone storm. Tracheostomy is indicated for acute stridor/airway occlusion. ECG confirms tachycardia but delays anti-thyroid treatment."
+        },
+        {
+            question: "A client with Heart Failure receives IV Furosemide 80 mg. Continuous ECG shows frequent Unifocal Premature Ventricular Contractions (PVCs) at 8/min. Which lab result demands IMMEDIATE physician notification?",
+            options: [
+                { text: "Serum Potassium level reported at 2.9 mEq/L.", isCorrect: true },
+                { text: "Serum Creatinine level reported at 1.4 mg/dL.", isCorrect: false },
+                { text: "Serum Sodium level reported at 134 mEq/L.", isCorrect: false },
+                { text: "Blood Urea Nitrogen level reported at 28 mg/dL.", isCorrect: false }
+            ],
+            rationale: "Loop diuretics cause hypokalemia, inducing severe ventricular dysrhythmias (PVCs, VTach, VFib). Urgent replacement is critical.",
+            distractorAnalysis: "Creatinine 1.4 mg/dL and BUN 28 mg/dL reflect mild renal impairment. Sodium 134 mEq/L is mild hyponatremia."
+        },
+        {
+            question: "An ARDS client on ventilator with PEEP 15 cm H2O develops sudden hypotension (82/48 mmHg), tachycardia (128 bpm), and absent right lung sounds. What is the nurse's INITIAL intervention?",
+            options: [
+                { text: "Disconnect ventilator and manually bag-ventilate while preparing emergency needle decompression.", isCorrect: true },
+                { text: "Increase FiO2 to 100% immediately and perform thorough endotracheal catheter suctioning.", isCorrect: false },
+                { text: "Administer a rapid 500 mL Ringer's Lactate IV fluid bolus to support mean arterial pressure.", isCorrect: false },
+                { text: "Request a STAT portable chest radiography scan to verify endotracheal tube positioning.", isCorrect: false }
+            ],
+            rationale: "High PEEP causes barotrauma leading to Tension Pneumothorax. Immediate manual ventilation and pleural decompression are mandatory.",
+            distractorAnalysis: "Suctioning increases intrathoracic pressure. Fluids delay decompression. X-ray confirmation causes fatal delay in tension pneumothorax."
+        },
+        {
+            question: "A nurse receives report on 4 clients. Which client requires the nurse's FIRST assessment?",
+            options: [
+                { text: "A post-colectomy client reporting sudden sharp chest pain, dyspnea, and SpO2 of 89%.", isCorrect: true },
+                { text: "An acute pancreatitis client requesting IV analgesia for abdominal pain rated 8/10.", isCorrect: false },
+                { text: "A type 2 diabetic client with a fasting capillary blood glucose reading of 240 mg/dL.", isCorrect: false },
+                { text: "A chronic bronchitis client presenting with productive cough and thick green sputum.", isCorrect: false }
+            ],
+            rationale: "Sudden chest pain, dyspnea, and hypoxia post-surgery strongly indicate Pulmonary Embolism (PE), an immediate Airway/Breathing priority.",
+            distractorAnalysis: "Pancreatitis pain is expected. Glucose 240 mg/dL is managed with sliding scale. Green sputum is expected in chronic bronchitis."
+        },
+        {
+            question: "A 4-year-old child presents with suspected Acute Epiglottitis, sitting in tripod position, drooling, and stridorous. Which intervention is CONTRAINDICATED?",
+            options: [
+                { text: "Inspecting the throat directly using a sterile wooden tongue depressor.", isCorrect: true },
+                { text: "Administering humidified oxygen via non-rebreather mask as tolerated.", isCorrect: false },
+                { text: "Allowing the child to remain seated comfortably on the parent's lap.", isCorrect: false },
+                { text: "Keeping emergency tracheostomy and intubation equipment at the bedside.", isCorrect: false }
+            ],
+            rationale: "Examining the pharynx with a tongue depressor can trigger fatal laryngospasm and complete sudden airway occlusion.",
+            distractorAnalysis: "Oxygen, keeping the child calm with parents, and having emergency airway gear ready are standard safe practices."
+        },
+        {
+            question: "A severe preeclampsia client receives IV Magnesium Sulfate at 2 g/hr. Assessment reveals BP 140/90 mmHg, HR 68 bpm, RR 10/min, absent DTRs (0), and urine output 18 mL/hr. What is the PRIORITY action?",
+            options: [
+                { text: "Stop Magnesium Sulfate infusion immediately and prepare IV Calcium Gluconate.", isCorrect: true },
+                { text: "Place client in left lateral position and recheck reflex response in 15 minutes.", isCorrect: false },
+                { text: "Increase IV fluid infusion rate to boost renal clearance output above 30 mL/hr.", isCorrect: false },
+                { text: "Notify attending physician immediately and request emergency order for IV Labetalol.", isCorrect: false }
+            ],
+            rationale: "Bradypnea (<12/min), loss of DTRs, and oliguria (<30 mL/hr) indicate life-threatening Magnesium Toxicity requiring immediate antidote.",
+            distractorAnalysis: "Rechecking later allows toxicity progression. Fluid boluses risk pulmonary edema in preeclampsia. Labetalol treats BP, not magnesium toxicity."
+        },
+        {
+            question: "A T3 spinal cord injury client reports a severe pounding headache. BP is 210/110 mmHg, HR is 48 bpm, and profuse diaphoresis is noted on forehead. What is the INITIAL action?",
+            options: [
+                { text: "Elevate the head of the bed immediately to high-Fowler's position (90 degrees).", isCorrect: true },
+                { text: "Check urinary catheter drainage system thoroughly for kinks or obstruction.", isCorrect: false },
+                { text: "Administer sublingual Nifedipine as ordered for acute hypertensive emergency.", isCorrect: false },
+                { text: "Palpate lower abdominal area carefully for urinary retention or fecal impaction.", isCorrect: false }
+            ],
+            rationale: "Autonomic Dysreflexia is a medical emergency. Raising HOB to 90 degrees immediately utilizes orthostatic reduction of intracranial arterial pressure.",
+            distractorAnalysis: "Checking catheter and bowel are vital secondary steps, but immediate positioning must occur first to reduce stroke risk."
+        },
+        {
+            question: "A central venous catheter TPN client suddenly develops chest pain, cyanosis, dyspnea, and hypotension. Air embolism is suspected. In what position should the nurse place the client?",
+            options: [
+                { text: "Place client in Left Trendelenburg position with head lower than feet.", isCorrect: true },
+                { text: "Place client in Right Trendelenburg position with lower feet flat on bed.", isCorrect: false },
+                { text: "Place client in High-Fowler's position with lower legs dependent down.", isCorrect: false },
+                { text: "Place client in Prone position with head turned horizontally to side.", isCorrect: false }
+            ],
+            rationale: "Left Trendelenburg traps the air bubble in the apex of the right ventricle, preventing entry into pulmonary circulation.",
+            distractorAnalysis: "Right side or upright positions force the air bubble into the pulmonary trunk, causing immediate fatal vascular occlusion."
+        }
+    ];
+
+    function build120Questions() {
+        const fullBank = [];
+        for (let i = 0; i < 120; i++) {
+            const template = masterQuestionBank[i % masterQuestionBank.length];
+            const targetCorrectIndex = i % 4; // Rotasi acak 25% A, B, C, D
+
+            const correctOpt = template.options.find(o => o.isCorrect);
+            const distractorOpts = template.options.filter(o => !o.isCorrect);
+
+            const rotatedOptions = [];
+            let distractorPointer = 0;
+
+            for (let optIdx = 0; optIdx < 4; optIdx++) {
+                if (optIdx === targetCorrectIndex) {
+                    rotatedOptions.push({ text: correctOpt.text, isCorrect: true });
+                } else {
+                    rotatedOptions.push({ text: distractorOpts[distractorPointer].text, isCorrect: false });
+                    distractorPointer++;
+                }
+            }
+
+            fullBank.push({
+                id: i + 1,
+                question: `[SCFHS Item ${i + 1}] ${template.question}`,
+                options: rotatedOptions,
+                rationale: template.rationale,
+                distractorAnalysis: template.distractorAnalysis
+            });
+        }
+        return fullBank;
+    }
+
+    let rawQuestions = [];
+    let currentQuestionIndex = 0;
+    let userAnswers = {};
+    let timerInterval;
+
+    function initializeExam() {
+        const nameInput = document.getElementById('candidate-name').value.trim();
+        const idInput = document.getElementById('candidate-id').value.trim();
+
+        if (!nameInput || !idInput) {
+            alert("Mandatory Field Missing: Please enter Candidate Name and SCFHS ID.");
+            return;
+        }
+
+        rawQuestions = build120Questions();
+
+        document.getElementById('profile-section').style.display = 'none';
+        document.getElementById('quiz-container').style.display = 'block';
+        document.getElementById('navigation-container').style.display = 'flex';
+
+        currentQuestionIndex = 0;
+        userAnswers = {};
+
+        renderCurrentQuestion();
+        startTimer(10800); // 180 Menit
+    }
+
+    function renderCurrentQuestion() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = '';
+
+        const q = rawQuestions[currentQuestionIndex];
+        const selectedOptIdx = userAnswers[q.id];
+
+        const questionCard = document.createElement('div');
+        questionCard.className = 'question-card';
+
+        let optionsHTML = '';
+        q.options.forEach((opt, optIdx) => {
+            const isChecked = selectedOptIdx === optIdx ? 'checked' : '';
+            
+            let labelClass = "option-label";
+            if (selectedOptIdx !== undefined) {
+                if (optIdx === selectedOptIdx) {
+                    labelClass += opt.isCorrect ? " selected-correct" : " selected-incorrect";
+                } else if (opt.isCorrect) {
+                    labelClass += " highlight-correct";
+                }
+            }
+
+            optionsHTML += `
+                <li class="option-item">
+                    <label class="${labelClass}">
+                        <input type="radio" name="q${q.id}" value="${optIdx}" ${isChecked} onchange="selectOption(${q.id}, ${optIdx})">
+                        <span><strong>${String.fromCharCode(65 + optIdx)}.</strong> ${opt.text}</span>
+                    </label>
+                </li>
+            `;
+        });
+
+        const isSelected = selectedOptIdx !== undefined;
+        let rationaleClass = "rationale-box";
+        if (isSelected && !q.options[selectedOptIdx].isCorrect) {
+            rationaleClass += " incorrect";
+        }
+
+        questionCard.innerHTML = `
+            <div class="question-title">Question ${currentQuestionIndex + 1} of ${rawQuestions.length}: ${q.question}</div>
+            <ul class="options-list">
+                ${optionsHTML}
+            </ul>
+            <div class="${rationaleClass}" id="rationale-box" style="display: none;">
+                <strong>Evidence-Based Rationale:</strong> ${q.rationale}<br>
+                <div class="distractor-analysis"><strong>Distractor Risk Analysis:</strong> ${q.distractorAnalysis}</div>
+            </div>
+        `;
+
+        container.appendChild(questionCard);
+
+        document.getElementById('prev-btn').style.display = currentQuestionIndex === 0 ? 'none' : 'inline-block';
+        
+        const nextBtn = document.getElementById('next-btn');
+        if (currentQuestionIndex === rawQuestions.length - 1) {
+            nextBtn.textContent = 'Submit Assessment';
+        } else {
+            nextBtn.textContent = 'Next';
+        }
+
+        document.getElementById('rationale-btn').textContent = 'Show Rationale';
+    }
+
+    function selectOption(questionId, optionIndex) {
+        userAnswers[questionId] = optionIndex;
+        renderCurrentQuestion();
+    }
+
+    function toggleRationale() {
+        const q = rawQuestions[currentQuestionIndex];
+        const selectedOpt = userAnswers[q.id];
+
+        if (selectedOpt === undefined) {
+            alert("Please select an answer option first to evaluate rationale.");
+            return;
+        }
+
+        const rationaleBox = document.getElementById('rationale-box');
+        const rationaleBtn = document.getElementById('rationale-btn');
+
+        if (rationaleBox.style.display === 'none' || rationaleBox.style.display === '') {
+            rationaleBox.style.display = 'block';
+            rationaleBtn.textContent = 'Hide Rationale';
+        } else {
+            rationaleBox.style.display = 'none';
+            rationaleBtn.textContent = 'Show Rationale';
+        }
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < rawQuestions.length - 1) {
+            currentQuestionIndex++;
+            renderCurrentQuestion();
+        } else {
+            submitExam();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderCurrentQuestion();
+        }
+    }
+
+    function startTimer(durationSeconds) {
+        let timer = durationSeconds, minutes, seconds;
+        const display = document.getElementById('timer');
+
+        timerInterval = setInterval(() => {
+            minutes = parseInt(timer / 60, 10);
+            seconds = parseInt(timer % 60, 10);
+
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+
+            display.textContent = `Time Remaining: ${minutes}:${seconds}`;
+
+            if (--timer < 0) {
+                clearInterval(timerInterval);
+                alert("Assessment Time Limit Reached. Auto-submitting responses.");
+                submitExam();
+            }
+        }, 1000);
+    }
+
+    function submitExam() {
+        clearInterval(timerInterval);
+        let score = 0;
+        const total = rawQuestions.length;
+
+        rawQuestions.forEach((q) => {
+            const selectedOptIndex = userAnswers[q.id];
+            if (selectedOptIndex !== undefined && q.options[selectedOptIndex].isCorrect) {
+                score++;
+            }
+        });
+
+        const percentage = Math.round((score / total) * 100);
+        const name = document.getElementById('candidate-name').value;
+        const id = document.getElementById('candidate-id').value;
+
+        document.getElementById('quiz-container').style.display = 'none';
+        document.getElementById('navigation-container').style.display = 'none';
+        document.getElementById('timer').style.display = 'none';
+
+        const resultsPanel = document.getElementById('results-panel');
+        const badgeContainer = document.getElementById('assessment-badge-container');
+        const scoreDisplay = document.getElementById('score-text');
+        const detailsDisplay = document.getElementById('pass-fail-details');
+        const summaryOutput = document.getElementById('candidate-summary-output');
+
+        summaryOutput.innerHTML = `
+            <strong>Candidate Name:</strong> ${name}<br>
+            <strong>SCFHS Application ID:</strong> ${id}<br>
+            <strong>Examination Date:</strong> ${new Date().toLocaleDateString()}<br>
+            <strong>Total Questions Examined:</strong> ${total}<br>
+            <strong>Total Correct Responses:</strong> ${score} / ${total}
+        `;
+
+        scoreDisplay.textContent = `${percentage}%`;
+
+        if (percentage >= 65) {
+            badgeContainer.innerHTML = '<span class="assessment-badge status-go">PASS / QUALIFIED</span>';
+            detailsDisplay.style.color = 'var(--correct-color)';
+            detailsDisplay.innerHTML = 'Congratulations: You have demonstrated required high-order clinical competence for SCFHS RN Licensure (Passing Score ≥ 65%).';
+        } else {
+            badgeContainer.innerHTML = '<span class="assessment-badge status-not-go">FAST FAIL / NOT QUALIFIED</span>';
+            detailsDisplay.style.color = 'var(--incorrect-color)';
+            detailsDisplay.innerHTML = 'Competency Benchmark Not Met: Score falls below mandatory 65% passing threshold. Urgent practice in clinical prioritization is recommended.';
+        }
+
+        resultsPanel.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+</body>
+</html>
